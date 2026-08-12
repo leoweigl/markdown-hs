@@ -1,0 +1,11 @@
+# Compiled files
+*.hi
+*.o
+
+# Executables
+*.exe
+
+# Input
+
+# Generated output
+*.html

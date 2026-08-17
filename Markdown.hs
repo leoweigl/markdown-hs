@@ -29,13 +29,17 @@ markListLines list = case list of
 renderLines :: Int -> [(String, Int)] -> [String]
 renderLines lastLevel list = case list of
   [] -> [closeLi ++ closeUl | wasLast]
-  (x, currentLevel) : xs -> case (wasLast, currentLevel /= -1, compare lastLevel currentLevel) of
-    (True, True, LT) -> openUl : openLi : parseListContent x : renderLines currentLevel xs
-    (_, True, LT) -> openUl : openLi : parseListContent x : renderLines currentLevel xs
-    (True, True, EQ) -> closeLi : openLi : parseListContent x : renderLines currentLevel xs
-    (True, True, GT) -> repeatTagPair closeLi closeUl (lastLevel - currentLevel) ++ closeLi : openLi : parseListContent x : renderLines currentLevel xs
-    (True, _, _) -> repeatTagPair closeLi closeUl (lastLevel - currentLevel) ++ fromMaybeError (parseLine x) : renderLines currentLevel xs
-    (_, _, _) -> [closeUl | wasLast] ++ fromMaybeError (parseLine x) : renderLines currentLevel xs
+  (x, currentLevel) : xs -> case (wasLast, isCurrent, compare lastLevel currentLevel) of
+    (_, True, LT) -> openUl : openLi : listItemRest
+    (True, True, EQ) -> closeLi : openLi : listItemRest
+    (True, True, GT) -> closingTags ++ closeLi : openLi : listItemRest
+    (True, _, _) -> closingTags ++ noListItemRest
+    (_, _, _) -> [closeUl | wasLast] ++ noListItemRest
+    where
+      isCurrent = currentLevel /= -1
+      listItemRest = parseListContent x : renderLines currentLevel xs
+      noListItemRest = fromMaybeError (parseLine x) : renderLines currentLevel xs
+      closingTags = repeatTagPair closeLi closeUl (lastLevel - currentLevel)
   where
     wasLast = lastLevel /= -1
     (openUl, closeUl) = tagPair (HtmlTag "ul")
@@ -47,16 +51,18 @@ parseLine :: String -> Maybe String
 parseLine line = case line of
   [] -> Just "<br>"
   _ -> case (n, isValidHeading line) of
-    (0, True) -> Just (parseItalic (parseBold ("<p>" ++ line ++ "</p>")))
-    (_, True) -> Just (parseItalic (parseBold ("<h" ++ show n ++ ">" ++ stripLeadingSpaces (stripLeadingChar '#' line) ++ "</h" ++ show n ++ ">")))
+    (0, True) -> Just (openP ++ parseCode line ++ closeP)
+    (_, True) -> Just (openH ++ parseCode (stripLeadingSpaces (stripLeadingChar '#' line)) ++ closeH)
     (_, _) -> Nothing
   where
     n = countLeading '#' line
+    (openH, closeH) = tagPair (HtmlTag ("h" ++ show n))
+    (openP, closeP) = tagPair (HtmlTag "p")
 
 parseListContent :: String -> String
 parseListContent str = case stripLeadingSpaces str of
   [] -> []
-  (_ : _ : xs) -> parseItalic (parseBold xs)
+  (_ : _ : xs) -> parseCode xs
 
 fromMaybeError :: Maybe String -> String
 fromMaybeError str = case str of
@@ -108,6 +114,11 @@ parseBold line = case line of
   [] -> []
   _ -> concat (wrapMarkedSegments (withIndices (splitOnString (== "**") line)) (HtmlTag "strong"))
 
+parseCode :: String -> String
+parseCode line = case line of
+  [] -> []
+  _ -> concat (wrapSegments (withIndices (splitOnChar (== '`') line)))
+
 splitOnChar :: (Char -> Bool) -> String -> [String]
 splitOnChar f str = case str of
   [] -> [""]
@@ -146,6 +157,16 @@ wrapMarkedSegments list tag = case list of
       then y : wrapMarkedSegments xs tag
       else case tagPair tag of
         (a, b) -> (a ++ y ++ b) : wrapMarkedSegments xs tag
+
+wrapSegments :: [(Int, String)] -> [String]
+wrapSegments list = case list of
+  [] -> []
+  (x, y) : xs ->
+    if even x
+      then parseItalic (parseBold y) : wrapSegments xs
+      else openC : y : closeC : wrapSegments xs
+  where
+    (openC, closeC) = tagPair (HtmlTag "code")
 
 -- Generic string utilities
 

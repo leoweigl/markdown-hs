@@ -1,6 +1,7 @@
 # Compiled files
 *.hi
 *.o
+build/
 
 # Executables
 *.exe

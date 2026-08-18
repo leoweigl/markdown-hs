@@ -50,10 +50,10 @@ isOnlyCharOrSpace char str = case str of
   [] -> True
   (x : xs) -> (x == char || x == ' ') && isOnlyCharOrSpace char xs
 
-countOccurences :: String -> Char -> Int
-countOccurences str char = case str of
+countOccurrences :: String -> Char -> Int
+countOccurrences str char = case str of
   [] -> 0
   (x : xs) ->
     if x == char
-      then 1 + countOccurences xs char
-      else countOccurences xs char
+      then 1 + countOccurrences xs char
+      else countOccurrences xs char

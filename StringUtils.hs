@@ -44,3 +44,16 @@ splitOnString f str = case str of
 
 splitImpossible :: String
 splitImpossible = "split: impossible, recursive call never returns []"
+
+isOnlyCharOrSpace :: Char -> String -> Bool
+isOnlyCharOrSpace char str = case str of
+  [] -> True
+  (x : xs) -> (x == char || x == ' ') && isOnlyCharOrSpace char xs
+
+countOccurences :: String -> Char -> Int
+countOccurences str char = case str of
+  [] -> 0
+  (x : xs) ->
+    if x == char
+      then 1 + countOccurences xs char
+      else countOccurences xs char

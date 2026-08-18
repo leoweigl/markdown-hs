@@ -1,9 +1,19 @@
 module BlockProcessing where
 
 import LineParsing (fromMaybeError, parseLine, parseListContent)
-import StringUtils (repeatTagPair)
+import StringUtils (countOccurences, isOnlyCharOrSpace, repeatTagPair)
 import TagHelpers (HtmlTag (HtmlTag), tagPair)
 import Validation (listLevel)
+
+markhorizontalRules :: [(String, Bool)] -> [(String, Bool)]
+markhorizontalRules list = case list of
+  [] -> []
+  (x, y) : xs ->
+    if not y && isHRule
+      then ("<hr>", isHRule) : markhorizontalRules xs
+      else (x, y) : markhorizontalRules xs
+    where
+      isHRule = isOnlyCharOrSpace '-' x && countOccurences x '-' > 2 || isOnlyCharOrSpace '*' x && countOccurences x '*' > 2
 
 markCodeBlocks :: [String] -> [(String, Bool)]
 markCodeBlocks list = case list of

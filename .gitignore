@@ -6,6 +6,8 @@ build/
 # Executables
 *.exe
 
+CODE_REVIEW.md
+
 # Input
 input.md
 

@@ -60,7 +60,26 @@ cp example.md input.md
  
 This is a learning project, not a full Markdown implementation. Notably
 missing: links, ordered lists, and blockquotes.
+
+Behavior worth knowing:
+
+- Every non-empty line becomes its own paragraph; empty lines only separate
+  blocks and produce no output.
+- A blank line ends a list, so two lists separated by an empty line are
+  rendered as two separate lists.
+- A line with only the marker (`-` or `- `) is not a list item and is
+  rendered as a paragraph.
+- Nesting is based on indentation: one level per two leading spaces.
  
+## Documentation
+
+The functions are documented with Haddock comments. To generate the HTML
+documentation into `docs/` (ignored by git):
+
+```
+haddock --html -o docs Main.hs BlockProcessing.hs LineParsing.hs InlineFormatting.hs Validation.hs StringUtils.hs TagHelpers.hs Config.hs
+```
+
 ## Project structure
  
 - `Main.hs` — entry point: reads the input file and chains the processing steps

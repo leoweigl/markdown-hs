@@ -13,3 +13,6 @@ input.md
 
 # Generated output
 *.html
+
+# Haddock Docs
+docs/

@@ -21,7 +21,8 @@ recursive parsing — by building something practical from scratch.
 - Headings (`#` to `######`)
 - **Bold** text (`**text**`)
 - *Italic* text (`*text*`)
-- Unordered lists (`- item`)
+- Unordered lists (`- item`), including nested lists (2 spaces of indentation per level)
+- Horizontal rules (`---` or `***`)
 - Inline Code (``Text with `code` in it``)
 - Fenced Code Block (``Start/End Block with ``` ``)
 
@@ -35,7 +36,7 @@ comment (`<!-- Error: invalid line -->`) instead of failing silently.
 ## Build
  
 ```
-ghc -outputdir build -o convert .\Main.hs  
+ghc -Wall -outputdir build -o convert .\Main.hs  
 ```
  
 ## Usage
@@ -58,9 +59,15 @@ cp example.md input.md
 ## Limitations
  
 This is a learning project, not a full Markdown implementation. Notably
-missing: links, code blocks, ordered lists, nested lists, and blockquotes.
+missing: links, ordered lists, and blockquotes.
  
 ## Project structure
  
-- `Markdown.hs` — parsing and HTML generation logic
+- `Main.hs` — entry point: reads the input file and chains the processing steps
+- `BlockProcessing.hs` — block-level handling (code blocks, horizontal rules, lists)
+- `LineParsing.hs` — single-line parsing (headings, paragraphs, list content)
+- `InlineFormatting.hs` — inline formatting (bold, italic, inline code)
+- `Validation.hs` — checks for headings and list items, list nesting level
+- `StringUtils.hs` — string helper functions
+- `TagHelpers.hs` — HTML tag helpers
 - `Config.hs` — file path configuration

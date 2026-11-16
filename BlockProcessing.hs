@@ -1,7 +1,7 @@
 module BlockProcessing where
 
 import LineParsing (fromMaybeError, parseLine, parseListContent)
-import StringUtils (countOccurrences, isOnlyCharOrSpace, repeatTagPair)
+import StringUtils (countOccurrences, isOnlyCharOrSpace, prependToFirst, repeatTagPair)
 import TagHelpers (HtmlTag (HtmlTag), tagPair)
 import Validation (listLevel)
 
@@ -27,13 +27,15 @@ markCodeBlocks list = case list of
 renderCodeBlocks :: [(String, Bool)] -> Bool -> [(String, Bool)]
 renderCodeBlocks list blockActive = case list of
   [] -> [(closeC ++ closePre, True) | blockActive]
+  [(x, False)]
+    | blockActive -> [(x ++ closeC ++ closePre, True)]
+  (x, False) : (_, True) : xs
+    | blockActive -> (x ++ closeC ++ closePre, True) : renderCodeBlocks xs False
   (x, y) : xs -> case (blockActive, y) of
-    (False, True) -> (openPre ++ openC, protected) : renderCodeBlocks xs True
-    (True, True) -> (closeC ++ closePre, protected) : renderCodeBlocks xs False
-    (True, _) -> (x, protected) : renderCodeBlocks xs True
-    _ -> (x, protected) : renderCodeBlocks xs False
-    where
-      protected = blockActive || y
+    (False, True) -> prependToFirst (openPre ++ openC) (renderCodeBlocks xs True)
+    (True, True) -> (closeC ++ closePre, True) : renderCodeBlocks xs False
+    (True, _) -> (x, True) : renderCodeBlocks xs True
+    _ -> (x, False) : renderCodeBlocks xs False
   where
     (openPre, closePre) = tagPair (HtmlTag "pre")
     (openC, closeC) = tagPair (HtmlTag "code")

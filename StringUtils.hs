@@ -57,3 +57,8 @@ countOccurrences str char = case str of
     if x == char
       then 1 + countOccurrences xs char
       else countOccurrences xs char
+
+prependToFirst :: String -> [(String, Bool)] -> [(String, Bool)]
+prependToFirst prefix list = case list of
+  [] -> [(prefix, True)]
+  (s, b) : rest -> (prefix ++ s, b) : rest

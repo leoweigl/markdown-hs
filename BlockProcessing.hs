@@ -81,3 +81,12 @@ renderLines lastLevel list = case list of
     (openUl, closeUl) = tagPair (HtmlTag "ul")
     (openLi, closeLi) = tagPair (HtmlTag "li")
     closeOpenLists = repeatTagPair closeLi closeUl (lastLevel + 1)
+
+convert :: String -> String
+convert file = unlines htmlLines
+  where
+    markedCodeBlocks = markCodeBlocks (lines file)
+    codeBlocks = renderCodeBlocks markedCodeBlocks False
+    horizontalRules = markHorizontalRules codeBlocks
+    listLines = markListLines horizontalRules
+    htmlLines = renderLines (-1) listLines

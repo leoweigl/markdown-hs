@@ -29,11 +29,19 @@ testData =
     )
   ]
 
-testPattern :: (String, String, String) -> String
+testPattern :: (String, String, String) -> (String, Bool)
 testPattern (name, markdown, expHtml) =
   if convert markdown == expHtml
-    then "OK: " ++ name
-    else "ERROR: " ++ name
+    then ("OK: " ++ name, True)
+    else ("ERROR: " ++ name, False)
 
 main :: IO ()
-main = mapM_ (putStrLn . testPattern) testData
+main = do
+  mapM_ putStrLn infos
+  putStrLn summary
+  where
+    results = map testPattern testData
+    infos = map fst results
+    passed = length (filter snd results)
+    total = length results
+    summary = show passed ++ " of " ++ show total ++ " tests passed"

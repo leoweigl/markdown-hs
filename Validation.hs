@@ -4,12 +4,11 @@ import StringUtils (stripLeadingSpaces)
 
 isValidHeading :: String -> Bool
 isValidHeading str =
-  n == 0
-    || case compare n 7 of
-      LT -> case drop n str of
-        [] -> True
-        (x : _) -> x == ' '
-      _ -> False
+  (n < 7 && n > 0)
+    && ( case drop n str of
+           [] -> True
+           (x : _) -> x == ' '
+       )
   where
     n = countLeading '#' str
 

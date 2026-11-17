@@ -74,7 +74,7 @@ renderLines lastLevel list = case list of
       closingTags = repeatTagPair closeLi closeUl (lastLevel - currentLevel)
       -- empty lines (see parseLine) produce no output
       isBlank = null lineContent
-      lineContent = fromMaybeError (parseLine x)
+      lineContent = parseLine x
       rest = renderLines currentLevel xs
   where
     wasLast = lastLevel /= -1

@@ -5,14 +5,14 @@ import StringUtils (stripLeadingChar, stripLeadingSpaces)
 import TagHelpers (HtmlTag (HtmlTag), tagPair)
 import Validation (countLeading, isValidHeading)
 
-parseLine :: String -> Maybe String
+parseLine :: String -> String
 parseLine line = case line of
   -- empty line: no output; renderLines skips empty results
-  [] -> Just ""
-  _ -> case (n, isValidHeading line) of
-    (0, True) -> Just (openP ++ parseCode line ++ closeP)
-    (_, True) -> Just (openH ++ parseCode (stripLeadingSpaces (stripLeadingChar '#' line)) ++ closeH)
-    (_, _) -> Nothing
+  [] -> ""
+  _ ->
+    if isValidHeading line
+      then openH ++ parseCode (stripLeadingSpaces (stripLeadingChar '#' line)) ++ closeH
+      else openP ++ parseCode line ++ closeP
   where
     n = countLeading '#' line
     (openH, closeH) = tagPair (HtmlTag ("h" ++ show n))

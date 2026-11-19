@@ -59,7 +59,7 @@ renderLines lastLevel list = case list of
       -- protected block, close any open lists and forward -1 as list level
       then closeOpenLists ++ x : renderLines (-1) xs
       else case (wasLast, isCurrent, compare lastLevel currentLevel) of
-        (_, True, LT) -> openUl : openLi : listItemRest
+        (_, True, LT) -> openLists ++ listItemRest
         (True, True, EQ) -> closeLi : openLi : listItemRest
         (True, True, GT) -> closingTags ++ closeLi : openLi : listItemRest
         (True, _, _) -> closingTags ++ noListItemRest
@@ -76,6 +76,7 @@ renderLines lastLevel list = case list of
       isBlank = null lineContent
       lineContent = parseLine x
       rest = renderLines currentLevel xs
+      openLists = repeatTagPair openUl openLi (currentLevel - lastLevel)
   where
     wasLast = lastLevel /= -1
     (openUl, closeUl) = tagPair (HtmlTag "ul")

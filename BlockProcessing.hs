@@ -3,7 +3,24 @@ module BlockProcessing where
 import LineParsing (fromMaybeError, parseLine, parseListContent)
 import StringUtils (countOccurrences, isOnlyCharOrSpace, prependToFirst, repeatTagPair)
 import TagHelpers (HtmlTag (HtmlTag), tagPair)
-import Validation (listLevel)
+import Validation (listLevel, isListItem)
+
+data Line
+  = FenceOpen
+  | FenceClose
+  | CodeLine String
+  | ListItem Int String
+  | Rule
+  | TextLine String
+  deriving (Show, Eq)
+
+classifyLines :: [String] -> [Line]
+classifyLines line = case line of
+  [] -> []
+  (x : xs)
+    | isFence x -> FenceOpen : classifyLines xs
+    | isHRule x -> Rule : classifyLines xs
+    | isListItem x -> ListItem 0 x : classifyLines xs
 
 -- | Marks horizontal rules (three or more '-' or '*', spaces allowed) with True and replaces
 -- the line with "<hr>". Non-rule lines stay untouched and protected lines are skipped.
@@ -11,18 +28,21 @@ markHorizontalRules :: [(String, Bool)] -> [(String, Bool)]
 markHorizontalRules list = case list of
   [] -> []
   (x, y) : xs ->
-    if not y && isHRule
-      then ("<hr>", isHRule) : markHorizontalRules xs
+    if not y && isHRule x
+      then ("<hr>", isHRule x) : markHorizontalRules xs
       else (x, y) : markHorizontalRules xs
-    where
-      -- True if line is a rule by character occurrences of '-' or '*', otherwise False.
-      isHRule = (isOnlyCharOrSpace '-' x && countOccurrences x '-' > 2) || (isOnlyCharOrSpace '*' x && countOccurrences x '*' > 2)
 
 -- | Pairs each line with a Bool: True if the line is a code block fence, False otherwise.
 markCodeBlocks :: [String] -> [(String, Bool)]
 markCodeBlocks list = case list of
   [] -> []
   (x : xs) -> (x, take 3 x == "```") : markCodeBlocks xs
+
+isFence :: String -> Bool
+isFence line = take 3 line == "```"
+
+isHRule :: String -> Bool
+isHRule line = (isOnlyCharOrSpace '-' line && countOccurrences line '-' > 2) || (isOnlyCharOrSpace '*' line && countOccurrences line '*' > 2)
 
 renderCodeBlocks :: [(String, Bool)] -> Bool -> [(String, Bool)]
 renderCodeBlocks list blockActive = case list of
